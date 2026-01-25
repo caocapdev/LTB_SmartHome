@@ -12,9 +12,9 @@ void setup() {
   // Initialize Serial communication
   Serial.begin(9600);
   doorServo.attach(5);
-  myStepper.setMaxSpeed(1000);
-	myStepper.setAcceleration(200);
-	myStepper.setSpeed(1000);
+  myStepper.setMaxSpeed(600);
+	myStepper.setAcceleration(500);
+	myStepper.setSpeed(600);
   pinMode(4,OUTPUT);
   pinMode(2,OUTPUT);
   pinMode(9,OUTPUT);
@@ -45,7 +45,7 @@ void loop() {
       }
       Serial.println(); // End the message with a newline
     } else  if (message == "DOOR1 OPEN") {
-    for(int i=0;i<140;i++){
+    for(int i=0;i<95;i++){
       
       doorServo.write(i); // Turn servo to 90 degrees
     delay(1);
@@ -54,10 +54,10 @@ void loop() {
   } else if (message == "DOOR1 CLOSE") {
     doorServo.write(0); // Turn servo to 0 degrees
     Serial.println("DOOR1 CLOSED");
-  } else if(message == "LIFT GARAGE") {
-	  myStepper.moveTo(15000);
+  } else if(message == "OPEN MAINDOOR") {
+	  myStepper.moveTo(-6000);
     
-  } else if(message == "DROP GARAGE"){
+  } else if(message == "CLOSE MAINDOOR"){
 	  myStepper.moveTo(0);
 
   } else if(message == "CURTAIN OPEN"){

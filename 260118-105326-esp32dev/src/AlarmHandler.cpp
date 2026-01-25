@@ -34,7 +34,7 @@ void handleAlarm() {
     currentAlarmType = 0;
     return;
   }
-  Serial.println("passed");
+  // Serial.println("passed");
   if (status.safety && sensor.safety) {
     pcfTouch.digitalWrite(15, 0);
     alarmStatus = 1;

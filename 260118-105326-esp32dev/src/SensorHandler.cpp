@@ -67,7 +67,10 @@ void handleTouchSensors() {
 void handleDigital() {
   for (int i = 0; i < 16; i++) {
     digitalData[i] = !pcfDigital.digitalRead(i);
-    Serial.printf("Digital %d: %d\r", i, digitalData[i]," ");
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.print(digitalData[i]);
+    Serial.print(" ");
   }
   Serial.println();
   ERa.virtualWrite(12, digitalData[8]);
