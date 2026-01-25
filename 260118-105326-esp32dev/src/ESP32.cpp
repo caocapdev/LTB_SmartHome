@@ -26,7 +26,7 @@ void setup() {
   sensor.window = true;
   sensor.burglar = true;
   sensor.safety = true;
-  thresholds.smoke = 75;
+  thresholds.smoke = 50;
 
   // Initialize Hardware
   initHardware();

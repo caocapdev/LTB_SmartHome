@@ -1,5 +1,6 @@
 #include "SensorHandler.h"
 #include "RelayHandler.h"
+#include "AlarmHandler.h"
 
 bool touchStates[NUM_TOUCH_SENSORS] = {false};
 int analogData[8] = {0};
@@ -20,45 +21,16 @@ void handleTouchSensors() {
       // Original logic: toggle on any change (press and release)
       if (i < 12) {
         toggleRelay(i);
-      } else if (i == 12) { // Label 13
+      } else if (i == 13) { // Label 13
         Serial2.println("OPEN MAINDOOR");
         statusStartTime = millis();
         strcpy(dashboardStatus, "NÂNG GARAGE");
-      } else if (i == 13) { // Label 14
+      } else if (i == 12) { // Label 14
         Serial2.println("CLOSE MAINDOOR");
         statusStartTime = millis();
         strcpy(dashboardStatus, "HẠ GARAGE");
       } else if (i == 14) { // Label 15
-        isArmed = !isArmed;
-        statusStartTime = millis();
-        if (!isArmed) {
-          alarmStatus = 0;
-          pcfTouch.digitalWrite(15, 1);
-          ERa.virtualWrite(33, 0);
-
-          ERa.virtualWrite(34, 0);
-          ERa.virtualWrite(35, 0);
-          ERa.virtualWrite(36, 0);
-          ERa.virtualWrite(37, 0);
-
-          ERa.virtualWrite(42, 0);
-          ERa.virtualWrite(43, 0);
-
-          ERa.virtualWrite(51, 0);
-          strcpy(dashboardStatus, "HỆ THỐNG TẮT");
-        } else {
-          strcpy(dashboardStatus, "HỆ THỐNG BẬT");
-          ERa.virtualWrite(34, 1);
-          ERa.virtualWrite(35, 1);
-          ERa.virtualWrite(36, 1);
-          ERa.virtualWrite(37, 1);
-
-          ERa.virtualWrite(42, 1);
-          ERa.virtualWrite(43, 1);
-
-          ERa.virtualWrite(51, 1);
-        }
-        ERa.virtualWrite(43, isArmed);
+        setArmedState(!isArmed);
       }
     }
   }

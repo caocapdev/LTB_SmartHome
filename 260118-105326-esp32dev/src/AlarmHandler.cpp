@@ -22,8 +22,10 @@ void scanSensor() {
   status.window =
       (digitalData[8] + digitalData[9] + digitalData[10] + digitalData[11]) ? 1
                                                                             : 0;
-  status.safety = (status.fire + status.smoke) > 0 ? 1 : 0;
-  status.burglar = (status.window + status.radar) > 0 ? 1 : 0;
+
+  // Only trigger global safety/burglar if the specific sensor type is enabled
+  status.safety = ((status.fire && sensor.fire) || (status.smoke && sensor.smoke)) ? 1 : 0;
+  status.burglar = ((status.window && sensor.window) || (status.radar && sensor.radar)) ? 1 : 0;
   // Serial.println(thresholds.smoke);
 }
 
@@ -32,35 +34,38 @@ void handleAlarm() {
   scanSensor();
   if (!isArmed) {
     currentAlarmType = 0;
+    alarmStatus = 0; // Reset alarm status when disarmed
     return;
   }
-  // Serial.println("passed");
-  if (status.safety && sensor.safety) {
-    pcfTouch.digitalWrite(15, 0);
+
+  // Latch alarmStatus and turn off relays
+  if (status.safety || status.burglar) {
     alarmStatus = 1;
     turnOffAllRelays();
-    statusStartTime = millis(); // Kepp showing while active
-    if (status.smoke && sensor.smoke) {
+    statusStartTime = millis(); // Keep showing while active
+  }
+
+  // Handle high-level alarm buzzer control
+  if (alarmStatus) {
+    pcfTouch.digitalWrite(15, 0); // Active BUZZER
+  }
+
+  // Set specific alarm types (Once set, they latch until disarmed)
+  if (status.safety) {
+    if (status.smoke && currentAlarmType == 0) {
       ERa.virtualWrite(33, 1);
       currentAlarmType = 1;
       strcpy(dashboardStatus, "PHÁT HIỆN KHÍ ĐỘC");
     }
-    if (status.fire && sensor.fire) {
+    if (status.fire && (currentAlarmType == 0 || currentAlarmType == 1)) {
       ERa.virtualWrite(33, 2);
-      currentAlarmType = 2;
+      currentAlarmType = 2; // Fire has higher priority than smoke
       strcpy(dashboardStatus, "PHÁT HIỆN CHÁY");
     }
-  }
-  if (status.burglar && sensor.burglar) {
+  } else if (status.burglar && currentAlarmType == 0) {
     ERa.virtualWrite(33, 3);
-    pcfTouch.digitalWrite(15, 0);
-    alarmStatus = 1;
-    turnOffAllRelays();
-    statusStartTime = millis();
-    if ((status.window && sensor.window) || (status.radar && sensor.radar)) {
-      currentAlarmType = 3;
-      strcpy(dashboardStatus, "PHÁT HIỆN TRỘM");
-    }
+    currentAlarmType = 3;
+    strcpy(dashboardStatus, "PHÁT HIỆN TRỘM");
   }
 }
 
@@ -100,23 +105,58 @@ ERA_WRITE(V43) {
   ERa.virtualWrite(43, sensor.burglar);
 }
 
-ERA_WRITE(V51) {
-  isArmed = param.getInt();
+void setArmedState(bool armed) {
+  isArmed = armed;
   ERa.virtualWrite(51, isArmed);
-  Serial.println("v51 spam");
-  ERa.virtualWrite(34, isArmed);
-  ERa.virtualWrite(35, isArmed);
-  ERa.virtualWrite(36, isArmed);
-  ERa.virtualWrite(37, isArmed);
+  
+  statusStartTime = millis();
+  if (!isArmed) {
+    alarmStatus = 0;
+    currentAlarmType = 0;
+    pcfTouch.digitalWrite(15, 1); // Turn off buzzer
+    ERa.virtualWrite(33, 0);
 
-  ERa.virtualWrite(42, isArmed);
-  ERa.virtualWrite(43, isArmed);
-  sensor.smoke = isArmed;
-  sensor.fire = isArmed;
-  sensor.window = isArmed;
-  sensor.radar = isArmed;
-  sensor.safety = isArmed;
-  sensor.burglar = isArmed;
+    // Reset all sensor enable flags and their virtual pins
+    sensor.smoke = 0;
+    sensor.fire = 0;
+    sensor.window = 0;
+    sensor.radar = 0;
+    sensor.safety = 0;
+    sensor.burglar = 0;
+
+    ERa.virtualWrite(34, 0);
+    ERa.virtualWrite(35, 0);
+    ERa.virtualWrite(36, 0);
+    ERa.virtualWrite(37, 0);
+    ERa.virtualWrite(42, 0);
+    ERa.virtualWrite(43, 0);
+
+    strcpy(dashboardStatus, "HỆ THỐNG TẮT");
+  } else {
+    // Enable all sensor flags when armed
+    sensor.smoke = 1;
+    sensor.fire = 1;
+    sensor.window = 1;
+    sensor.radar = 1;
+    sensor.safety = 1;
+    sensor.burglar = 1;
+
+    ERa.virtualWrite(34, 1);
+    ERa.virtualWrite(35, 1);
+    ERa.virtualWrite(36, 1);
+    ERa.virtualWrite(37, 1);
+    ERa.virtualWrite(42, 1);
+    ERa.virtualWrite(43, 1);
+
+    strcpy(dashboardStatus, "HỆ THỐNG BẬT");
+  }
+}
+
+ERA_WRITE(V51) {
+  bool value = param.getInt();
+  if (value != isArmed) {
+    setArmedState(value);
+  }
 }
 
 ERA_WRITE(49) {

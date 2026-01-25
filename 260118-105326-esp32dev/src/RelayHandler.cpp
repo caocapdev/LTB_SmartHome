@@ -37,7 +37,7 @@ void turnOffAllRelays() {
     pcfRelay.digitalWrite(i, 1);
     ERa.virtualWrite(i, 1);
   }
-  snprintf(dashboardStatus, sizeof(dashboardStatus), "TẤT CẢ ĐÈN ĐÃ TẮT");
+  // snprintf(dashboardStatus, sizeof(dashboardStatus), "TẤT CẢ ĐÈN ĐÃ TẮT");
   statusStartTime = millis();
 }
 
@@ -88,6 +88,30 @@ ERA_WRITE(V7) {
   int value = param.getInt();
   relayStates[7] = value;
   pcfRelay.digitalWrite(7, value);
+}
+
+ERA_WRITE(V8) {
+  int value = param.getInt();
+  relayStates[8] = value;
+  pcfRelay.digitalWrite(8, value);
+}
+
+ERA_WRITE(V9) {
+  int value = param.getInt();
+  relayStates[9] = value;
+  pcfRelay.digitalWrite(9, value);
+}
+
+ERA_WRITE(V10) {
+  int value = param.getInt();
+  relayStates[10] = value;
+  pcfRelay.digitalWrite(10, value);
+}
+
+ERA_WRITE(V11) {
+  int value = param.getInt();
+  relayStates[11] = value;
+  pcfRelay.digitalWrite(11, value);
 }
 
 ERA_WRITE(47) {
