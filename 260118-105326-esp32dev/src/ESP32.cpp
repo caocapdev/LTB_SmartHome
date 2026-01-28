@@ -5,6 +5,7 @@
 #include "Hardware.h"
 #include "RelayHandler.h"
 #include "SensorHandler.h"
+#include "MCPHandler.h"
 
 // Wi-Fi Credentials
 const char ssid[] = "xnxx";
@@ -35,7 +36,8 @@ void setup() {
 
   // Connect to ERa IoT platform
   ERa.begin(ssid, pass);
-  ERa.virtualWrite(33, 0);
+  // Bắt đầu MCP
+  initMCP();
 
   // Set up periodic tasks
   ERa.addInterval(1000L, timerEvent);
@@ -45,6 +47,7 @@ void setup() {
 void loop() {
   ERa.run();
   timer.run();
+  handleMCP();
 }
 void debounce(){
   handleTouchSensors();
