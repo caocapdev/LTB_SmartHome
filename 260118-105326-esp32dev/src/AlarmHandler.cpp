@@ -178,3 +178,13 @@ ERA_WRITE(50) {
   }
   ERa.virtualWrite(50, value);
 }
+
+ERA_WRITE(V52) {
+  int value = param.getInt();
+  if (value) {
+    Serial2.println("DOOR2 OPEN");
+  } else {
+    Serial2.println("DOOR2 CLOSE");
+  }
+  ERa.virtualWrite(52, value);
+}

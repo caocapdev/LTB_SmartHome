@@ -6,6 +6,7 @@
 #include "RelayHandler.h"
 #include "SensorHandler.h"
 #include "MCPHandler.h"
+#include "RFIDHandler.h"
 
 // Wi-Fi Credentials
 const char ssid[] = "xnxx";
@@ -38,6 +39,7 @@ void setup() {
   ERa.begin(ssid, pass);
   // Bắt đầu MCP
   initMCP();
+  initRFID();
 
   // Set up periodic tasks
   ERa.addInterval(1000L, timerEvent);
@@ -48,6 +50,7 @@ void loop() {
   ERa.run();
   timer.run();
   handleMCP();
+  handleRFID();
 }
 void debounce(){
   handleTouchSensors();
