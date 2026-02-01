@@ -7,11 +7,16 @@
 AccelStepper myStepper(1, 11, 12);
 
 Servo doorServo;
+Servo doorServo2;
+unsigned long door2StartTime = 0;
+bool door2IsMoving = false;
+const unsigned long door2MoveDuration = 1500;
 
 void setup() {
   // Initialize Serial communication
   Serial.begin(9600);
   doorServo.attach(5);
+  doorServo2.attach(6);
   myStepper.setMaxSpeed(600);
 	myStepper.setAcceleration(500);
 	myStepper.setSpeed(600);
@@ -22,6 +27,12 @@ void setup() {
 
 void loop() {
   myStepper.run();
+
+  if (door2IsMoving && (millis() - door2StartTime >= door2MoveDuration)) {
+    doorServo2.write(90);
+    door2IsMoving = false;
+    Serial.println("DOOR2 STOPPED");
+  }
   // Check if data is available in the Serial buffer
   if (Serial.available()) {
     // Read the incoming message
@@ -34,6 +45,9 @@ void loop() {
       int analogValues[8];
       for (int i = 0; i < 8; i++) {
         analogValues[i] = analogRead(i); // Read analog pins A0 to A5
+        if(i==5){
+          analogValues[i]=map(analogValues[i],0,1023,1023,0);
+        }
       }
 
       // Send analog data back to the Serial Monitor
@@ -54,6 +68,16 @@ void loop() {
   } else if (message == "DOOR1 CLOSE") {
     doorServo.write(0); // Turn servo to 0 degrees
     Serial.println("DOOR1 CLOSED");
+  } else  if (message == "DOOR2 OPEN") {
+    doorServo2.write(180);
+    door2StartTime = millis();
+    door2IsMoving = true;
+    Serial.println("DOOR2 OPENING");
+  } else if (message == "DOOR2 CLOSE") {
+    doorServo2.write(0);
+    door2StartTime = millis();
+    door2IsMoving = true;
+    Serial.println("DOOR2 CLOSING");
   } else if(message == "OPEN MAINDOOR") {
 	  myStepper.moveTo(-6000);
     
